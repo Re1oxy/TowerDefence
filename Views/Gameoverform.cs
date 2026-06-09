@@ -73,9 +73,13 @@ namespace TowerDefense.Views
             };
             btnAgain.Click += (s, e) =>
             {
-                var gameForm = new GameForm();
-                gameForm.Show();
-                Owner?.Hide();
+                var modeForm = new ModeSelectForm();
+                if (modeForm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    var gameForm = new GameForm(modeForm.SelectedConfig);
+                    gameForm.Show();
+                    Owner?.Hide();
+                }
                 Close();
             };
 
