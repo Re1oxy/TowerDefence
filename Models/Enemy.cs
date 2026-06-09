@@ -9,7 +9,7 @@ namespace TowerDefense.Models
     public abstract class Enemy : Entity
     {
         public int MaxHealth { get; protected set; }
-        public int CurrentHealth { get; private set; }
+        public int CurrentHealth { get; protected set; }
         public float Speed { get; protected set; }
         public int Reward { get; protected set; }
         public int Damage { get; protected set; }
@@ -130,15 +130,16 @@ namespace TowerDefense.Models
     /// <summary>Orc — basic enemy: medium speed, medium HP.</summary>
     public class Orc : Enemy
     {
-        public Orc(float x, float y, List<Point> path) : base(x, y, 28, 28, path)
+        public Orc(float x, float y, List<Point> path, float hpMult = 1f, float speedMult = 1f)
+            : base(x, y, 28, 28, path)
         {
             EnemyType = EnemyType.Orc;
-            Speed = 80f;
+            Speed = 80f * speedMult;
             Reward = 10;
             Damage = 1;
             PrimaryColor = Color.FromArgb(80, 160, 60);
             SecondaryColor = Color.DarkGreen;
-            InitHealth(60);
+            InitHealth((int)(60 * hpMult));
         }
 
         protected override void DrawSymbol(Graphics g)
@@ -155,11 +156,6 @@ namespace TowerDefense.Models
             using var tuskBrush = new SolidBrush(Color.Ivory);
             g.FillRectangle(tuskBrush, cx - 6, cy + 2, 3, 5);
             g.FillRectangle(tuskBrush, cx + 3, cy + 2, 3, 5);
-
-            // Letter label
-            using var font = new Font("Arial", 7, FontStyle.Bold);
-            using var brush = new SolidBrush(Color.White);
-            g.DrawString("ORC", font, brush, X + 3, Y + 9);
         }
     }
 
@@ -167,15 +163,16 @@ namespace TowerDefense.Models
     /// <summary>Troll — slow but very tanky. Deals 2 damage to castle.</summary>
     public class Troll : Enemy
     {
-        public Troll(float x, float y, List<Point> path) : base(x, y, 34, 34, path)
+        public Troll(float x, float y, List<Point> path, float hpMult = 1f, float speedMult = 1f)
+            : base(x, y, 34, 34, path)
         {
             EnemyType = EnemyType.Troll;
-            Speed = 45f;
+            Speed = 45f * speedMult;
             Reward = 20;
             Damage = 2;
             PrimaryColor = Color.FromArgb(100, 80, 50);
             SecondaryColor = Color.SaddleBrown;
-            InitHealth(200);
+            InitHealth((int)(200 * hpMult));
         }
 
         protected override void DrawSymbol(Graphics g)
@@ -192,7 +189,6 @@ namespace TowerDefense.Models
             using var browPen = new Pen(Color.Black, 2);
             g.DrawLine(browPen, cx - 9, cy - 8, cx - 2, cy - 6);
             g.DrawLine(browPen, cx + 2, cy - 6, cx + 9, cy - 8);
-
         }
     }
 
@@ -200,15 +196,16 @@ namespace TowerDefense.Models
     /// <summary>Dragon — fast, high castle damage, high reward.</summary>
     public class Dragon : Enemy
     {
-        public Dragon(float x, float y, List<Point> path) : base(x, y, 38, 38, path)
+        public Dragon(float x, float y, List<Point> path, float hpMult = 1f, float speedMult = 1f)
+            : base(x, y, 38, 38, path)
         {
             EnemyType = EnemyType.Dragon;
-            Speed = 120f;
+            Speed = 120f * speedMult;
             Reward = 50;
             Damage = 5;
             PrimaryColor = Color.FromArgb(200, 50, 30);
             SecondaryColor = Color.DarkRed;
-            InitHealth(120);
+            InitHealth((int)(120 * hpMult));
         }
 
         protected override void DrawSymbol(Graphics g)
@@ -227,7 +224,6 @@ namespace TowerDefense.Models
             using var eyeBrush = new SolidBrush(Color.Yellow);
             g.FillEllipse(eyeBrush, cx - 9, cy - 7, 7, 7);
             g.FillEllipse(eyeBrush, cx + 2, cy - 7, 7, 7);
-
         }
     }
 }
