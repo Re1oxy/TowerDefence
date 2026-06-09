@@ -52,6 +52,7 @@
     <Compile Include="Models\Boss.cs" />
     <Compile Include="Models\Enemy.cs" />
     <Compile Include="Models\Entity.cs" />
+    <Compile Include="Models\Gameconfig.cs" />
     <Compile Include="Models\Gamemap.cs" />
     <Compile Include="Models\Gamestate.cs" />
     <Compile Include="Models\Projectile.cs" />
