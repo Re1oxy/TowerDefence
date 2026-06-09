@@ -7,11 +7,8 @@ namespace TowerDefense.Views
 {
     public class MainMenuForm : Form
     {
-        // ── Controls ──────────────────────────────────────────────────────────
         private Button _btnPlay;
         private Button _btnQuit;
-
-        // ── Animation ─────────────────────────────────────────────────────────
         private System.Windows.Forms.Timer _animTimer;
         private float _animOffset = 0f;
 
@@ -21,9 +18,6 @@ namespace TowerDefense.Views
             InitializeControls();
             InitializeAnimation();
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  Form / Controls / Animation setup
 
         private void InitializeForm()
         {
@@ -38,18 +32,20 @@ namespace TowerDefense.Views
 
         private void InitializeControls()
         {
-            // ── Play button ───────────────────────────────────────────────────
             _btnPlay = CreateButton("[ PLAY ]", new Point(ClientSize.Width / 2 - 120, 340));
             _btnPlay.BackColor = Color.FromArgb(60, 140, 60);
             _btnPlay.Click += (s, e) =>
             {
-                var gameForm = new GameForm();
-                gameForm.FormClosed += (gs, ge) => Show();
-                Hide();
-                gameForm.Show();
+                var modeForm = new ModeSelectForm();
+                if (modeForm.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    var gameForm = new GameForm(modeForm.SelectedConfig);
+                    gameForm.FormClosed += (gs, ge) => Show();
+                    Hide();
+                    gameForm.Show();
+                }
             };
 
-            // ── Quit button ───────────────────────────────────────────────────
             _btnQuit = CreateButton("[ QUIT ]", new Point(ClientSize.Width / 2 - 120, 420));
             _btnQuit.BackColor = Color.FromArgb(140, 50, 50);
             _btnQuit.Click += (s, e) => Application.Exit();
@@ -80,9 +76,6 @@ namespace TowerDefense.Views
             _animTimer.Start();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        //  Rendering
-
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -97,7 +90,6 @@ namespace TowerDefense.Views
 
         private void DrawBackground(Graphics g)
         {
-            // ── Checkerboard grid ─────────────────────────────────────────────
             using var darkBrush = new SolidBrush(Color.FromArgb(25, 40, 25));
             using var lightBrush = new SolidBrush(Color.FromArgb(35, 55, 35));
             int cell = 48;
@@ -107,8 +99,6 @@ namespace TowerDefense.Views
                     bool checker = ((x / cell) + (y / cell)) % 2 == 0;
                     g.FillRectangle(checker ? darkBrush : lightBrush, x, y, cell, cell);
                 }
-
-            // ── Vignette overlay ──────────────────────────────────────────────
             using var vignette = new LinearGradientBrush(
                 new Rectangle(0, 0, ClientSize.Width, ClientSize.Height),
                 Color.FromArgb(160, 0, 0, 0), Color.FromArgb(60, 0, 0, 0),
@@ -120,12 +110,8 @@ namespace TowerDefense.Views
         {
             string title = "TOWER DEFENSE";
             using var font = new Font(Utils.Constants.FontName, 52, FontStyle.Bold);
-
-            // ── Drop shadow ───────────────────────────────────────────────────
             using var shadow = new SolidBrush(Color.FromArgb(120, 0, 0, 0));
             g.DrawString(title, font, shadow, ClientSize.Width / 2f - 248 + 4, 124);
-
-            // ── Main text ─────────────────────────────────────────────────────
             using var mainBrush = new SolidBrush(Color.FromArgb(180, 230, 160));
             g.DrawString(title, font, mainBrush, ClientSize.Width / 2f - 248, 120);
         }
@@ -143,29 +129,20 @@ namespace TowerDefense.Views
         {
             int cx = ClientSize.Width / 2;
             int cy = 290;
-
-            // ── Wall body ─────────────────────────────────────────────────────
             using var wallBrush = new SolidBrush(Color.FromArgb(140, 120, 90));
             g.FillRectangle(wallBrush, cx - 18, cy, 36, 30);
-
-            // ── Battlements ───────────────────────────────────────────────────
             g.FillRectangle(wallBrush, cx - 18, cy - 10, 10, 12);
             g.FillRectangle(wallBrush, cx - 4, cy - 10, 10, 12);
             g.FillRectangle(wallBrush, cx + 10, cy - 10, 10, 12);
-
-            // ── Gate ──────────────────────────────────────────────────────────
             using var gateBrush = new SolidBrush(Color.FromArgb(60, 45, 30));
             g.FillRectangle(gateBrush, cx - 6, cy + 14, 12, 16);
             g.FillEllipse(gateBrush, cx - 6, cy + 10, 12, 8);
-
-            // ── Outline ───────────────────────────────────────────────────────
             using var pen = new Pen(Color.FromArgb(180, 230, 160), 1);
             g.DrawRectangle(pen, cx - 18, cy, 36, 30);
         }
 
         private void DrawHint(Graphics g)
         {
-            // ── Tower info lines at the bottom ────────────────────────────────
             string[] lines =
             {
                 "[ ARC ]  Archer    50g  |  fast attack,  low damage",
@@ -182,9 +159,6 @@ namespace TowerDefense.Views
                 y += 22;
             }
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        //  Cleanup
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
