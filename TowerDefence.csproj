@@ -49,12 +49,14 @@
   <ItemGroup>
     <Compile Include="Controllers\Gamecontrollers.cs" />
     <Compile Include="Controllers\Wavemanager.cs" />
+    <Compile Include="Models\Boss.cs" />
     <Compile Include="Models\Enemy.cs" />
     <Compile Include="Models\Entity.cs" />
     <Compile Include="Models\Gamemap.cs" />
     <Compile Include="Models\Gamestate.cs" />
     <Compile Include="Models\Projectile.cs" />
     <Compile Include="Models\Tower.cs" />
+    <Compile Include="Models\TowerUpgrade.cs" />
     <Compile Include="Models\Wave.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
