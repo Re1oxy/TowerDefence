@@ -13,8 +13,8 @@ namespace TowerDefense.Utils
     public static class Constants
     {
         // Window dimensions
-        public const int MapWidth = 1200;   // 18 cols * 48
-        public const int MapHeight = 1000;   // 13 rows * 48
+        public const int MapWidth = 864;   // 18 cols * 48
+        public const int MapHeight = 624;   // 13 rows * 48
         public const int PanelWidth = 200;
         public const int WindowWidth = MapWidth + PanelWidth;
         public const int WindowHeight = MapHeight;
