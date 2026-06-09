@@ -8,7 +8,8 @@ namespace TowerDefense.Models
     public enum TowerType { Archer, Mage, Catapult }
 
     /// <summary>
-    /// Base tower class. Attacks the furthest enemy in range.
+    /// Base tower class. Attacks enemies based on selected priority.
+    /// Supports upgrade levels and selling.
     /// </summary>
     public abstract class Tower : Entity
     {
@@ -19,6 +20,17 @@ namespace TowerDefense.Models
         public float FireRate { get; protected set; }
         public string Name { get; protected set; }
         public string Description { get; protected set; }
+        public int Level { get; private set; } = 1;
+        public TargetPriority Priority { get; set; } = TargetPriority.First;
+
+        // -- Base stats stored for scaling on upgrade ----------------------------
+        protected int BaseDamage { get; set; }
+        protected float BaseRange { get; set; }
+        protected float BaseFireRate { get; set; }
+
+        // -- Sell value = 50% of total gold spent --------------------------------
+        private int _totalGoldSpent;
+        public int SellValue => _totalGoldSpent / 2;
 
         protected float FireCooldown { get; private set; } = 0f;
         protected ProjectileType ProjectileType { get; set; }
@@ -29,6 +41,15 @@ namespace TowerDefense.Models
         protected Color AccentColor { get; set; }
 
         protected Tower(float x, float y) : base(x, y, GameMap.CellSize, GameMap.CellSize) { }
+
+        // -- Called after subclass sets base stats -------------------------------
+        protected void FinalizeBaseStats()
+        {
+            BaseDamage = Damage;
+            BaseRange = Range;
+            BaseFireRate = FireRate;
+            _totalGoldSpent = Cost;
+        }
 
         public override void Update(float deltaTime)
         {
@@ -49,10 +70,19 @@ namespace TowerDefense.Models
 
         protected virtual Enemy FindTarget(List<Enemy> enemies)
         {
-            return enemies
-                .Where(e => e.IsAlive && DistanceTo(e) <= Range)
-                .OrderByDescending(e => e.DistanceTraveled)
-                .FirstOrDefault();
+            var inRange = enemies.Where(e => e.IsAlive && DistanceTo(e) <= Range);
+
+            switch (Priority)
+            {
+                case TargetPriority.First:
+                    return inRange.OrderByDescending(e => e.DistanceTraveled).FirstOrDefault();
+                case TargetPriority.Weakest:
+                    return inRange.OrderBy(e => e.CurrentHealth).FirstOrDefault();
+                case TargetPriority.Strongest:
+                    return inRange.OrderByDescending(e => e.CurrentHealth).FirstOrDefault();
+                default:
+                    return inRange.OrderByDescending(e => e.DistanceTraveled).FirstOrDefault();
+            }
         }
 
         protected virtual void Shoot(Enemy target)
@@ -69,6 +99,48 @@ namespace TowerDefense.Models
             return (float)Math.Sqrt(dx * dx + dy * dy);
         }
 
+        // -- Upgrade -------------------------------------------------------------
+        /// <summary>
+        /// Applies the next upgrade level. Returns false if already max or
+        /// upgrade data missing.
+        /// </summary>
+        public bool Upgrade(int maxLevel)
+        {
+            if (Level >= maxLevel) return false;
+
+            var upgrades = TowerUpgradeData.GetUpgrades(TowerType);
+            int idx = Level - 1; // Level 1 -> index 0
+            if (idx >= upgrades.Length) return false;
+
+            var u = upgrades[idx];
+            Damage = (int)(BaseDamage * u.DamageMult);
+            Range = BaseRange * u.RangeMult;
+            FireRate = BaseFireRate * u.FireRateMult;
+
+            _totalGoldSpent += u.GoldCost;
+            Level++;
+            return true;
+        }
+
+        public int GetUpgradeCost(int maxLevel)
+        {
+            if (Level >= maxLevel) return 0;
+            var upgrades = TowerUpgradeData.GetUpgrades(TowerType);
+            int idx = Level - 1;
+            if (idx >= upgrades.Length) return 0;
+            return upgrades[idx].GoldCost;
+        }
+
+        public string GetUpgradeLabel(int maxLevel)
+        {
+            if (Level >= maxLevel) return "MAX";
+            var upgrades = TowerUpgradeData.GetUpgrades(TowerType);
+            int idx = Level - 1;
+            if (idx >= upgrades.Length) return "MAX";
+            return upgrades[idx].Label;
+        }
+
+        // -- Draw ----------------------------------------------------------------
         public override void Draw(Graphics g)
         {
             DrawBase(g);
@@ -80,6 +152,18 @@ namespace TowerDefense.Models
             DrawBase(g);
             DrawTowerTop(g);
             DrawRange(g);
+        }
+
+        // -- Draw level indicator on top-right corner ----------------------------
+        private void DrawLevelBadge(Graphics g)
+        {
+            if (Level <= 1) return;
+            string lbl = Level == 2 ? "II" : "III";
+            using var font = new Font("Arial", 6, FontStyle.Bold);
+            using var bg = new SolidBrush(Color.FromArgb(180, 0, 0, 0));
+            using var brush = new SolidBrush(Color.FromArgb(255, 220, 80));
+            g.FillRectangle(bg, X + Width - 14, Y + 2, 12, 10);
+            g.DrawString(lbl, font, brush, X + Width - 14, Y + 2);
         }
 
         private void DrawBase(Graphics g)
@@ -137,6 +221,7 @@ namespace TowerDefense.Models
             ProjectileType = ProjectileType.Arrow;
             TowerColor = Color.FromArgb(139, 90, 43);
             AccentColor = Color.SandyBrown;
+            FinalizeBaseStats();
         }
 
         protected override List<Enemy> GetEnemies() => _enemies;
@@ -216,6 +301,7 @@ namespace TowerDefense.Models
             ProjectileType = ProjectileType.MagicBolt;
             TowerColor = Color.FromArgb(70, 40, 120);
             AccentColor = Color.MediumPurple;
+            FinalizeBaseStats();
         }
 
         protected override List<Enemy> GetEnemies() => _enemies;
@@ -266,6 +352,7 @@ namespace TowerDefense.Models
             ProjectileType = ProjectileType.Boulder;
             TowerColor = Color.FromArgb(80, 80, 80);
             AccentColor = Color.LightGray;
+            FinalizeBaseStats();
         }
 
         protected override List<Enemy> GetEnemies() => _enemies;
