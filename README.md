@@ -299,7 +299,7 @@ Global constants: map dimensions (864×624), panel width (200), window size (106
 
 ## Class Diagram
 
-![Class Diagram](Class Diagram.png)
+![Class Diagram](Class_Diagram.png)
 
 The diagram illustrates the full inheritance and dependency graph:
 
